@@ -8,7 +8,6 @@ from fastapi import FastAPI
 
 import os
 
-os.putenv("STATE", "0")
 app = FastAPI(title="Roomba Control", description="Control Romba over RESTApi", version="0.0.1")
 STATE = 0
 GREEN = 22
@@ -86,6 +85,7 @@ def main():
     global roomba
     global pi
     button_pin = 26
+    os.putenv("STATE", "0")
 
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
@@ -98,8 +98,8 @@ def main():
     roomba = Roomba(address, blid, roombaPassword)
 
     pi = pigpio.pi()
-    # pi.set_mode(button_pin, pigpio.INPUT)
-    # pi.callback(button_pin, pigpio.FALLING_EDGE, button_callback)
+    pi.set_mode(button_pin, pigpio.INPUT)
+    pi.callback(button_pin, pigpio.FALLING_EDGE, button_callback)
 
     loop = asyncio.get_event_loop()
     loop.create_task(run())
