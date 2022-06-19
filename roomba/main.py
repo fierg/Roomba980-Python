@@ -42,7 +42,6 @@ async def run():
         elif STATE == 3:
             await dock()
         else:
-            STATE = STATE + 1
             for i in range(2):
                 # print(json.dumps(roomba.master_state, indent=2))
                 await asyncio.sleep(1)
@@ -61,13 +60,17 @@ async def dock():
 async def start():
     roomba.send_command("start")
     pi.set_PWM_dutycycle(GREEN, 255)
+    await asyncio.sleep(30)
+    global STATE
+    STATE = 2
 
 
 async def init():
     roomba.connect()
-    await asyncio.sleep(10)
+    await asyncio.sleep(5)
     roomba.set_preference("carpetBoost", "true")
     roomba.set_preference("twoPass", "true")
+    await asyncio.sleep(5)
 
 
 async def stop():
@@ -75,6 +78,8 @@ async def stop():
 
     pi.set_PWM_dutycycle(GREEN, 0)
     pi.set_PWM_dutycycle(RED, 255)
+
+    await asyncio.sleep(5)
 
     roomba.send_command("stop")
     STATE = 3
