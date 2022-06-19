@@ -10,6 +10,7 @@ app = FastAPI(title="Roomba Control", description="Control Romba over RESTApi", 
 STATE = 0
 GREEN = 22
 RED = 17
+iteration = 0
 
 
 @app.get("/run", status_code=status.HTTP_201_CREATED)
@@ -31,6 +32,7 @@ async def _get_stop():
 async def run():
     await init()
     global STATE
+    global iteration
 
     while STATE != -1:
         logging.info(f'current event loop state: {STATE}')
@@ -45,6 +47,10 @@ async def run():
             for i in range(2):
                 # print(json.dumps(roomba.master_state, indent=2))
                 await asyncio.sleep(1)
+
+        if iteration == 5:
+            STATE = STATE + 1
+            iteration = 0
 
     roomba.disconnect()
     pi.stop()
@@ -62,7 +68,6 @@ async def start():
     pi.set_PWM_dutycycle(GREEN, 255)
     await asyncio.sleep(30)
     global STATE
-    STATE = 2
 
 
 async def init():
@@ -82,7 +87,6 @@ async def stop():
     await asyncio.sleep(5)
 
     roomba.send_command("stop")
-    STATE = 3
 
     await asyncio.sleep(30)
 
