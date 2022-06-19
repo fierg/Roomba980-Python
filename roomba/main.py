@@ -35,6 +35,7 @@ async def run():
     global iteration
 
     while STATE != -1:
+        iteration += 1
         logging.info(f'current event loop state: {STATE}')
 
         if STATE == 1:
