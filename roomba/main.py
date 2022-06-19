@@ -98,8 +98,8 @@ def main():
     # myroomba = Roomba(address) #if you have a config file - will attempt discovery if you don't
     roomba = Roomba(address, blid, roombaPassword)
     pi = pigpio.pi()
-    pi.set_mode(button_pin, pigpio.INPUT)
-    pi.callback(button_pin, pigpio.FALLING_EDGE, button_callback)
+    # pi.set_mode(button_pin, pigpio.INPUT)
+    # pi.callback(button_pin, pigpio.FALLING_EDGE, button_callback)
 
     loop = asyncio.get_event_loop()
     loop.create_task(run())
