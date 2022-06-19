@@ -6,8 +6,6 @@ from starlette import status
 from roomba import Roomba
 from fastapi import FastAPI
 
-import os
-
 app = FastAPI(title="Roomba Control", description="Control Romba over RESTApi", version="0.0.1")
 STATE = 0
 GREEN = 22
@@ -15,25 +13,27 @@ RED = 17
 
 
 @app.get("/run", status_code=status.HTTP_201_CREATED)
-async def get():
+async def _get_run():
     global STATE
     STATE = 1
-    os.putenv("STATE", "1")
+
+    return
+
+
+@app.get("/stop", status_code=status.HTTP_200_OK)
+async def _get_stop():
+    global STATE
+    STATE = 2
 
     return
 
 
 async def run():
-    os.putenv("STATE", "0")
-
     await init()
     global STATE
-    state2 = os.getenv("STATE")
 
     while STATE != -1:
-
         logging.info(f'current event loop state: {STATE}')
-        logging.info(f'current env var: {state2}')
 
         if STATE == 1:
             await start()
@@ -45,22 +45,18 @@ async def run():
             for i in range(2):
                 # print(json.dumps(roomba.master_state, indent=2))
                 await asyncio.sleep(1)
-
+            STATE = STATE + 1
+            
     roomba.disconnect()
     pi.stop()
+
 
 
 async def dock():
     await asyncio.sleep(30)
     roomba.send_command("dock")
-
-
-async def stop():
-    pi.set_PWM_dutycycle(GREEN, 0)
-    pi.set_PWM_dutycycle(RED, 255)
-
-    await asyncio.sleep(30)
-    roomba.send_command("stop")
+    global STATE
+    STATE = -1
 
 
 async def start():
@@ -75,17 +71,28 @@ async def init():
     roomba.set_preference("twoPass", "true")
 
 
+async def stop():
+    global STATE
+
+    pi.set_PWM_dutycycle(GREEN, 0)
+    pi.set_PWM_dutycycle(RED, 255)
+
+    roomba.send_command("stop")
+    STATE = 3
+
+    await asyncio.sleep(30)
+
+
 def button_callback():
     logging.info("Button was pushed!")
     global STATE
-    STATE = 1
+    STATE = 2
 
 
 def main():
     global roomba
     global pi
     button_pin = 26
-    os.putenv("STATE", "0")
 
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
