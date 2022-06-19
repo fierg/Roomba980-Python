@@ -8,7 +8,6 @@ from fastapi import FastAPI
 
 import os
 
-
 os.putenv("STATE", "0")
 app = FastAPI(title="Roomba Control", description="Control Romba over RESTApi", version="0.0.1")
 STATE = 0
@@ -26,6 +25,8 @@ async def get():
 
 
 async def run():
+    os.putenv("STATE", "0")
+
     await init()
     global STATE
     state2 = os.getenv("STATE")
