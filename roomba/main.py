@@ -42,14 +42,13 @@ async def run():
         elif STATE == 3:
             await dock()
         else:
+            STATE = STATE + 1
             for i in range(2):
                 # print(json.dumps(roomba.master_state, indent=2))
                 await asyncio.sleep(1)
-            STATE = STATE + 1
-            
+
     roomba.disconnect()
     pi.stop()
-
 
 
 async def dock():
