@@ -6,6 +6,8 @@ from starlette import status
 from roomba import Roomba
 from fastapi import FastAPI
 
+# import RPi.GPIO as GPIO  # Import Raspberry Pi GPIO library
+
 app = FastAPI(title="test", description="test", version="0.0.1")
 STATE = 0
 GREEN = 22
@@ -18,6 +20,12 @@ async def get():
     STATE = 1
 
     return
+
+
+# GPIO.setwarnings(False)  # Ignore warning for now
+# GPIO.setmode(GPIO.BOARD)  # Use physical pin numbering
+# GPIO.setup(10, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+# GPIO.add_event_detect(10, GPIO.RISING, callback=button_callback)
 
 
 async def run():
@@ -41,6 +49,7 @@ async def run():
 
     roomba.disconnect()
     pi.stop()
+    # GPIO.cleanup()
 
 
 async def dock():
@@ -68,9 +77,16 @@ async def init():
     roomba.set_preference("twoPass", "true")
 
 
+def button_callback():
+    logging.info("Button was pushed!")
+    global STATE
+    STATE = 1
+
+
 def main():
     global roomba
     global pi
+    button_pin = 26
 
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
@@ -82,6 +98,8 @@ def main():
     # myroomba = Roomba(address) #if you have a config file - will attempt discovery if you don't
     roomba = Roomba(address, blid, roombaPassword)
     pi = pigpio.pi()
+    pi.set_mode(button_pin, pigpio.INPUT)
+    pi.callback(button_pin, pigpio.FALLING_EDGE, button_callback)
 
     loop = asyncio.get_event_loop()
     loop.create_task(run())
