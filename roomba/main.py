@@ -6,9 +6,11 @@ from starlette import status
 from roomba import Roomba
 from fastapi import FastAPI
 
-# import RPi.GPIO as GPIO  # Import Raspberry Pi GPIO library
+import os
 
-app = FastAPI(title="test", description="test", version="0.0.1")
+
+os.putenv("STATE", "0")
+app = FastAPI(title="Roomba Control", description="Control Romba over RESTApi", version="0.0.1")
 STATE = 0
 GREEN = 22
 RED = 17
@@ -18,23 +20,20 @@ RED = 17
 async def get():
     global STATE
     STATE = 1
+    os.putenv("STATE", "1")
 
     return
-
-
-# GPIO.setwarnings(False)  # Ignore warning for now
-# GPIO.setmode(GPIO.BOARD)  # Use physical pin numbering
-# GPIO.setup(10, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-# GPIO.add_event_detect(10, GPIO.RISING, callback=button_callback)
 
 
 async def run():
     await init()
     global STATE
+    state2 = os.getenv("STATE")
 
     while STATE != -1:
 
         logging.info(f'current event loop state: {STATE}')
+        logging.info(f'current env var: {state2}')
 
         if STATE == 1:
             await start()
@@ -49,7 +48,6 @@ async def run():
 
     roomba.disconnect()
     pi.stop()
-    # GPIO.cleanup()
 
 
 async def dock():
@@ -90,13 +88,14 @@ def main():
 
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-    # uncomment the option you want to run, and replace address, blid and roombaPassword with your own values
+    # replace address, blid and roombaPassword with your own values
     address = "192.168.0.132"
     blid = "EEB15740BF3548A982C6BF99A916979C"
     roombaPassword = ":1:1653325360:nzUEQFIwZWTLn0t8"
 
     # myroomba = Roomba(address) #if you have a config file - will attempt discovery if you don't
     roomba = Roomba(address, blid, roombaPassword)
+
     pi = pigpio.pi()
     # pi.set_mode(button_pin, pigpio.INPUT)
     # pi.callback(button_pin, pigpio.FALLING_EDGE, button_callback)
